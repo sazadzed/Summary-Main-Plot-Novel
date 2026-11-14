@@ -169,10 +169,12 @@ A literary-grade web tool that transforms raw story chapters into a dense, AI-re
 
 ## 6. Technical Approach
 
-- **Single HTML file** with embedded CSS and JavaScript
-- **Vanilla JS** — no framework needed for this scope
+- **Flask backend** (`backend/app.py`) serves the frontend and exposes `POST /api/analyze`
+- **One Claude API call** with a JSON schema produces the whole Knowledge Package; there is no keyword or client-side analysis
+- **Vanilla JS** frontend, no framework
 - **Google Fonts** loaded via `<link>` (Playfair Display, Crimson Pro, JetBrains Mono)
-- **Lucide Icons** via CDN for SVG icons
-- **LocalStorage** — optional: save last input for recovery
-- **No backend** — all "AI processing" is smart client-side text analysis
+- **LocalStorage** keeps the "story so far" between chapters
 - **Responsive** — CSS Grid with media query at 768px breakpoint
+
+Sections 4 and 5 describe the first version; where they mention client-side analysis,
+a fixed 2.5 s processing animation, JSON character cards or `.txt` export, the README is current.

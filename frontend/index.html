@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StoryMind — Knowledge Package Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+    </svg>
+    <div>
+      <span class="logo-text">StoryMind</span>
+      <span class="logo-sub">Knowledge Package Generator</span>
+    </div>
+  </a>
+  <div class="header-actions">
+    <button class="btn btn-ghost" id="clearBtn" title="Clear everything">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Clear
+    </button>
+    <button class="btn btn-outline" id="exportBtn" disabled title="Export Knowledge Package">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <button class="btn btn-primary" id="processBtn" disabled title="Generate Knowledge Package">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Process
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- Left: Input Panel -->
+  <div class="input-panel">
+    <div>
+      <div class="panel-label">Your Story Chapter</div>
+      <div class="panel-desc">Paste narrative text, dialogue, or a chapter excerpt below.</div>
+    </div>
+
+    <!-- Drag & Drop Zone -->
+    <div class="drop-zone" id="dropZone">
+      <div class="drop-zone-inner" id="dropZoneInner">
+        <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span class="drop-text">Drop a <code>.txt</code> or <code>.md</code> file here to load</span>
+        <span class="drop-hint">or click to browse</span>
+        <input type="file" id="fileInput" accept=".txt,.md,.text,.story,.chapter,.txt" hidden>
+      </div>
+      <div class="drop-zone-hover" id="dropZoneHover">
+        <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span>Release to load file</span>
+      </div>
+    </div>
+
+    <div class="textarea-wrapper">
+      <textarea id="inputText" placeholder="Elena stepped through the rusted iron gates of Thornwood Manor for the first time in fifteen years. The gravel path crunched beneath her boots, each sound amplified in the unnatural silence. Above, rooks circled lazily in a sky the color of pewter. She clutched the solicitor's letter tighter — it was the only reason she had returned to this place, this town, this life she had tried so desperately to forget. The manor loomed ahead, its windows dark and hollow like the eyes of someone who has seen too much. As she approached the front door, a figure emerged from the shadows of the colonnade: Marcus, her brother's closest friend, his face aged by years she hadn't witnessed. 'They said you'd come,' he said quietly. 'They said it would end here.'" spellcheck="true"></textarea>
+
+      <div class="processing-overlay" id="processingOverlay">
+        <svg class="processing-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <div class="processing-stage" id="processingStage">Parsing narrative structure<span class="cursor-blink"></span></div>
+        <div class="processing-progress"><div class="processing-progress-bar" id="progressBar"></div></div>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <span id="wordCount">0 words</span>
+      <span id="charCount">0 characters</span>
+    </div>
+
+    <div class="options-bar">
+      <label>Write the summary in
+        <select id="outputLanguage">
+          <option value="auto">the chapter's language</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <label title="Uses the story so far from the last chapter you processed in this browser">
+        <input type="checkbox" id="continueStory" disabled>
+        <span>Continue from the previous chapter</span>
+      </label>
+    </div>
+
+    <div class="warning-msg" id="shortWarning">
+      Input is very short (&lt;50 words). Output may be limited, but processing anyway.
+    </div>
+  </div>
+
+  <!-- Right: Output Panel -->
+  <div class="output-panel" id="outputPanel">
+    <div class="panel-label">Knowledge Package</div>
+
+    <div id="placeholderState" class="output-placeholder">
+      <svg class="output-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+      </svg>
+      <p>Your Knowledge Package will appear here. Paste a story chapter and press Process.</p>
+    </div>
+
+    <div id="outputContent"></div>
+  </div>
+</main>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Knowledge Package exported!</span>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

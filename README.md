@@ -1,112 +1,81 @@
 # StoryMind — Knowledge Package Generator
 
-A warm, literary web tool that transforms raw story chapters into dense, AI-readable **Knowledge Packages** using real NLP.
+Paste a novel chapter, get a real summary: what happens and why, a timeline with
+quotes from the text, per-character notes, lore, open threads, and a running
+"story so far" that carries over to the next chapter. Works for Vietnamese,
+English and other languages.
 
-## Architecture
+The analysis is done by Claude through the Anthropic API, so you need an API key
+(https://console.anthropic.com). Each chapter costs a few cents.
 
-```
-Browser (HTML/CSS/JS)          Python Backend (Flask + spaCy)
-─────────────────────          ─────────────────────────────
-  app.js  ──────────POST──►  app.py → /api/analyze
-                    ◄──JSON──  spaCy NER, POS tagging,
-                    fallback   sentiment, entity extraction
-```
-
-## Quick Start
-
-### 1. Start the backend (optional — falls back to client-side if offline)
+## Run
 
 ```bash
-cd d:\Coding\Cursor new
-
-# Install dependencies (one-time)
-python -m pip install flask flask-cors
-python -m pip install spacy
-python -m spacy download en_core_web_sm --system
-
-# Run the server
-python app.py
+pip install -r requirements.txt
 ```
-
-The backend runs on **http://localhost:5000**. The frontend auto-detects it.
-
-### 2. Open the frontend
 
 ```bash
-# Option A: double-click index.html
-
-# Option B: local server (recommended)
-python -m http.server 8000
-# → open http://localhost:8000
+export ANTHROPIC_API_KEY=sk-ant-...      # Windows PowerShell: $env:ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-## Features
+```bash
+python backend/app.py
+```
 
-### Backend (Flask + spaCy)
-- **Named Entity Recognition (NER)** — spaCy detects PERSON, GPE, LOC, ORG, DATE entities
-- **POS Tagging** — extracts verbs, adjectives, nouns from the story
-- **Verb Analysis** — ranked list of dominant action verbs via lemma
-- **Sentence Tokenization** — intelligent sentence boundary detection
-- **Sentence-level Beat Classification** — categorizes each beat: Dialogue, Action, Reflection, etc.
-- **Character Emotion Detection** — maps emotional markers to character states
-- **Tense Detection** — identifies dominant narrative tense (past/present)
-- **Richer Output** — includes locations, organizations, dates/times, notable objects
+Open http://localhost:5000. The backend serves the page itself; do not open
+`index.html` directly.
 
-### Frontend (always available)
-- Full client-side fallback — works without the backend
-- Warm parchment UI with Playfair Display + Crimson Pro fonts
-- 4 collapsible virtual folders (Summary, Timeline, Characters, Lore)
-- 5th folder: Verb Analysis (spaCy mode only)
-- Processing animation with spinning gear + typewriter text
-- Staggered folder + line reveal animations
-- Confetti burst on export
-- Bouncy toast notifications
-- Word/character count with count-up animation
-- Export as `.txt` file
-- `Ctrl + Enter` keyboard shortcut
+Optional: `STORYMIND_MODEL` picks the model (default `claude-opus-5-5`;
+`claude-sonnet-5-5` and `claude-haiku-5-5` are cheaper).
+
+## Use
+
+- Paste text or drop a `.txt` / `.md` file, then **Process** (`Ctrl + Enter`).
+- **Write the summary in**: the chapter's language, Tiếng Việt, or English.
+- **Continue from the previous chapter**: sends the "story so far" from the last
+  chapter you processed in this browser, so the summary knows the plot up to
+  here. Untick it when you start a different novel.
+- **Export** saves the package as a Markdown file.
 
 ## API
 
-### `POST /api/analyze`
+`POST /api/analyze`
 
-**Request:**
 ```json
-{ "text": "Your story chapter here..." }
+{ "text": "chapter...", "output_language": "auto | vi | en", "story_so_far": "optional" }
 ```
 
-**Response:**
+Returns:
+
 ```json
 {
-  "meta": { "word_count", "char_count", "sentence_count", "entity_count", "analyzer" },
-  "overall_summary": { "bullets", "tone", "sentiment", "conflict", "ending_type", "setting" },
-  "timeline": { "plot_beats": [{ "beat_number", "type", "characters", "text" }] },
-  "characters": { "entities": [...], "cards": [{ "name", "role", "emotional_state", "key_actions", "relationships" }] },
+  "meta": { "word_count", "char_count", "analyzer" },
+  "overall_summary": { "logline", "narrative", "bullets", "tone", "conflict", "ending_type", "setting" },
+  "timeline": { "plot_beats": [{ "beat_number", "type", "characters", "text", "evidence" }] },
+  "characters": { "cards": [{ "name", "role", "emotional_state", "key_actions", "relationships": [{ "to", "nature" }], "change_in_chapter" }] },
   "lore": { "items": [{ "category", "detail" }] },
-  "entities": { "characters", "locations", "organizations", "dates_times", "objects" },
-  "top_verbs": [...]
+  "open_threads": ["..."],
+  "story_state": "running summary of the novel so far"
 }
 ```
 
-### `GET /health`
-Returns `{"status": "ok", "model": "en_core_web_sm"}`
+Errors come back as `{ "error": "message" }` with a 4xx/5xx status.
+`GET /health` returns `{ "status": "ok", "model": "..." }`.
 
-## Dependencies
+## Tests
 
-| Package | Purpose |
-|---|---|
-| Flask | Web server |
-| flask-cors | Cross-origin requests |
-| spacy | NLP engine |
-| en_core_web_sm | English language model |
+```bash
+pip install pytest && python -m pytest tests
+```
 
-## Project Structure
+The tests run the real Anthropic SDK against a fake HTTP transport: no key, no cost.
+
+## Layout
 
 ```
-d:\Coding\Cursor new\
-  index.html   — Frontend markup
-  style.css    — All styles + animations
-  app.js       — Frontend logic + API integration
-  app.py       — Flask backend with spaCy NLP
-  SPEC.md      — Design specification
-  README.md    — This file
+backend/app.py     Flask server: prompt, schema, one Claude call
+frontend/          index.html, app.js, style.css
+tests/test_app.py
+SPEC.md            original design spec (visual design still applies)
+UPGRADE_PLAN.md    why the keyword engine was replaced
 ```
